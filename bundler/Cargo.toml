@@ -7,3 +7,25 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.95"
+atoms = "2.2.3"
+base64 = "0.22.1"
+colored = "3.0.0"
+dirs = "6.0.0"
+lazy_static = "1.5.0"
+path-absolutize = "3.1.1"
+regex = "1.11.1"
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
+sha = "1.0.3"
+swc_atoms = "3.1.0"
+swc_bundler = { version = "9.0.0", features = ["concurrent"] }
+swc_common = { version = "6.1.1", features = ["tty-emitter", "sourcemap"] }
+swc_ecma_ast = "6.1.0"
+swc_ecma_codegen = "6.1.0"
+swc_ecma_loader = "6.0.0"
+swc_ecma_parser = "8.0.2"
+swc_ecma_transforms_base = "9.0.1"
+swc_ecma_transforms_typescript = "9.0.0"
+ureq = { version = "2.12.1", features = ["charset"] }
+url = "2.5.4"
