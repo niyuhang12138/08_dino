@@ -1,9 +1,7 @@
 mod cli;
-mod engine;
 mod utils;
 
 pub use cli::Opts;
-pub use engine::*;
 pub(crate) use utils::*;
 
 use cli::*;

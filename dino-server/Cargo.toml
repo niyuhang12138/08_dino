@@ -19,3 +19,7 @@ indexmap = { version = "2.7.1", features = ["serde"] }
 thiserror = "2.0.11"
 axum-extra = "0.10.0"
 dashmap = "6.1.0"
+dino-macros = { workspace = true }
+rquickjs = { workspace = true }
+rquickjs-macro = { workspace = true }
+typed-builder = "0.20.0"

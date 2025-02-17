@@ -1,7 +1,7 @@
-use std::{env, fs};
-
-use crate::{build_project, CmdExecutor, JsWorker, Req};
+use crate::{build_project, CmdExecutor};
 use clap::Parser;
+use dino_server::{JsWorker, Req};
+use std::{env, fs};
 
 #[derive(Parser, Debug)]
 pub struct RunOpts {}
