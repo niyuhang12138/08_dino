@@ -1,8 +1,8 @@
+use anyhow::Result;
+use dino_macros::{FromJs, IntoJs};
+use rquickjs::{Context, Function, Object, Promise, Runtime};
 use std::collections::HashMap;
 use typed_builder::TypedBuilder;
-
-use anyhow::Result;
-use rquickjs::{Context, FromJs, Function, IntoJs, Object, Promise, Runtime, Value};
 
 #[allow(unused)]
 pub struct JsWorker {
@@ -10,8 +10,8 @@ pub struct JsWorker {
     ctx: Context,
 }
 
-#[derive(Debug, TypedBuilder)]
-pub struct Request {
+#[derive(Debug, TypedBuilder, IntoJs)]
+pub struct Req {
     #[builder(default)]
     pub headers: HashMap<String, String>,
     #[builder(setter(into))]
@@ -22,8 +22,8 @@ pub struct Request {
     pub body: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct Response {
+#[derive(Debug, FromJs)]
+pub struct Res {
     pub headers: HashMap<String, String>,
     pub status: u16,
     pub body: Option<String>,
@@ -48,7 +48,7 @@ impl JsWorker {
         Ok(Self { rt, ctx })
     }
 
-    pub fn run(&self, name: &str, req: Request) -> Result<Response> {
+    pub fn run(&self, name: &str, req: Req) -> Result<Res> {
         self.ctx.with(|ctx| {
             let global = ctx.globals();
             let handlers: Object = global.get("handlers")?;
@@ -56,35 +56,6 @@ impl JsWorker {
             let v: Promise = fun.call((req,))?;
 
             Ok::<_, anyhow::Error>(v.finish()?)
-        })
-    }
-}
-
-impl<'js> IntoJs<'js> for Request {
-    fn into_js(self, ctx: &rquickjs::Ctx<'js>) -> rquickjs::Result<rquickjs::Value<'js>> {
-        let obj = Object::new(ctx.clone())?;
-
-        obj.set("headers", self.headers.into_js(ctx)?)?;
-        obj.set("method", self.method.into_js(ctx)?)?;
-        obj.set("url", self.url.into_js(ctx)?)?;
-        obj.set("body", self.body.into_js(ctx)?)?;
-
-        Ok(obj.into())
-    }
-}
-
-impl<'js> FromJs<'js> for Response {
-    fn from_js(ctx: &rquickjs::Ctx<'js>, value: Value<'js>) -> rquickjs::Result<Self> {
-        let obj = Object::from_js(ctx, value)?;
-
-        let headers: HashMap<String, String> = obj.get("headers")?;
-        let status: u16 = obj.get("status")?;
-        let body: Option<String> = obj.get("body")?;
-
-        Ok(Response {
-            headers,
-            status,
-            body,
         })
     }
 }
@@ -113,7 +84,7 @@ mod tests {
             return{hello:hello};
         })();
         "#;
-        let req = Request::builder().method("GET").url("/").build();
+        let req = Req::builder().method("GET").url("/").build();
         let worker = JsWorker::try_new(code)?;
         let res = worker.run("hello", req)?;
 

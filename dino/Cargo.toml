@@ -20,6 +20,7 @@ blake3 = "1.5.5"
 glob = "0.3.2"
 bundler = { workspace = true }
 tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros"] }
-rquickjs = { version = "0.9.0", features = ["full"] }
-rquickjs-macro = "0.9.0"
+rquickjs = { workspace = true }
+rquickjs-macro = { workspace = true }
 typed-builder = "0.20.0"
+dino-macros = { workspace = true }

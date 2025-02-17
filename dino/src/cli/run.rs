@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use crate::{build_project, CmdExecutor, JsWorker, Request};
+use crate::{build_project, CmdExecutor, JsWorker, Req};
 use clap::Parser;
 
 #[derive(Parser, Debug)]
@@ -13,7 +13,7 @@ impl CmdExecutor for RunOpts {
         let content = fs::read_to_string(&filename)?;
         let worker = JsWorker::try_new(&content)?;
         // TODO: normally this should run axum and let it load the worker
-        let req = Request::builder()
+        let req = Req::builder()
             .method("GET")
             .url("http://example.com")
             .build();

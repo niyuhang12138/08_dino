@@ -1,7 +1,10 @@
 [workspace]
-members = ["bundler", "dino"]
+members = ["bundler", "dino", "dino-macros"]
 resolver = "2"
 
 [workspace.dependencies]
 anyhow = "1.0.95"
 bundler = { path = "./bundler" }
+dino-macros = { path = "./dino-macros" }
+rquickjs = { version = "0.9.0", features = ["full"] }
+rquickjs-macro = "0.9.0"
