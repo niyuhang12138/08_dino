@@ -24,3 +24,4 @@ rquickjs = { workspace = true }
 rquickjs-macro = { workspace = true }
 typed-builder = "0.20.0"
 dino-macros = { workspace = true }
+tracing-subscriber = { workspace = true }
