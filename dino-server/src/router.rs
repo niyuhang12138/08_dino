@@ -1,7 +1,7 @@
-use crate::config::ProjectRoutes;
+use crate::{config::ProjectRoutes, AppError};
 use arc_swap::ArcSwap;
 use axum::http::Method;
-use matchit::Router;
+use matchit::{Match, Router};
 use std::sync::Arc;
 
 #[allow(unused)]
@@ -72,39 +72,41 @@ impl SwappableAppRouter {
     }
 }
 
-// #[allow(unused)]
-// impl AppRouter {
-//     pub fn match_it<'m, 'p>(&'m self, method: Method, path: &'p str) -> anyhow::Result<Match<&str>>
-//     where
-//         'p: 'm,
-//     {
-//         let Ok(ret) = self.0.at(path) else {
-//             return Err(anyhow::anyhow!("RoutePathNotFound: {}", path));
-//         };
-//         let s = match method {
-//             Method::GET => ret.value.get.as_deref(),
-//             Method::HEAD => ret.value.head.as_deref(),
-//             Method::DELETE => ret.value.delete.as_deref(),
-//             Method::OPTIONS => ret.value.options.as_deref(),
-//             Method::PATCH => ret.value.patch.as_deref(),
-//             Method::POST => ret.value.post.as_deref(),
-//             Method::PUT => ret.value.put.as_deref(),
-//             Method::TRACE => ret.value.trace.as_deref(),
-//             Method::CONNECT => ret.value.connect.as_deref(),
-//             _ => unreachable!(),
-//         }
-//         .ok_or_else(|| anyhow::anyhow!("MethodNotAllowed: {}", method))?;
+#[allow(unused)]
+impl AppRouter {
+    #[allow(elided_named_lifetimes)]
+    pub fn match_it<'a>(
+        &'a self,
+        method: Method,
+        path: &'a str,
+    ) -> Result<Match<&'a str>, AppError> {
+        let Ok(ret) = self.0.at(path) else {
+            return Err(AppError::RoutePathNotFound(path.to_string()));
+        };
+        let s = match method {
+            Method::GET => ret.value.get.as_deref(),
+            Method::HEAD => ret.value.head.as_deref(),
+            Method::DELETE => ret.value.delete.as_deref(),
+            Method::OPTIONS => ret.value.options.as_deref(),
+            Method::PATCH => ret.value.patch.as_deref(),
+            Method::POST => ret.value.post.as_deref(),
+            Method::PUT => ret.value.put.as_deref(),
+            Method::TRACE => ret.value.trace.as_deref(),
+            Method::CONNECT => ret.value.connect.as_deref(),
+            _ => unreachable!(),
+        }
+        .ok_or_else(|| AppError::RouteMethodNotAllowed(method))?;
 
-//         Ok(Match {
-//             value: s,
-//             params: ret.params,
-//         })
-//     }
-// }
+        Ok(Match {
+            value: s,
+            params: ret.params,
+        })
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    /*  use super::*;
+    use super::*;
     use crate::config::ProjectConfig;
 
     #[test]
@@ -119,8 +121,34 @@ mod tests {
         assert_eq!(m.value, "hello");
         assert_eq!(m.params.get("id"), Some("1"));
 
-        let m = app_router.match_it(Method::POST, "/api/hello/1").unwrap();
-        assert_eq!(m.value, "hello2");
-        assert_eq!(m.params.get("id"), Some("1"))
-    } */
+        let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
+        assert_eq!(m.value, "hello4");
+        assert_eq!(m.params.get("name"), Some("abc"));
+        assert_eq!(m.params.get("id"), Some("1"));
+    }
+
+    #[test]
+    fn app_router_swap_should_work() {
+        let config = include_str!("../fixtures/config.yml");
+        let routes: ProjectConfig = serde_yml::from_str(config).unwrap();
+        let routes = routes.routes;
+        let router = SwappableAppRouter::try_new(routes).unwrap();
+        let app_router = router.load();
+
+        let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
+        assert_eq!(m.value, "hello4");
+        assert_eq!(m.params.get("name"), Some("abc"));
+        assert_eq!(m.params.get("id"), Some("1"));
+
+        let new_config = include_str!("../fixtures/config1.yml");
+        let new_routes: ProjectConfig = serde_yml::from_str(new_config).unwrap();
+        let new_routes = new_routes.routes;
+        router.swap(new_routes).unwrap();
+        let app_router = router.load();
+
+        let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
+        assert_eq!(m.value, "handler2");
+        assert_eq!(m.params.get("name"), Some("abc"));
+        assert_eq!(m.params.get("id"), Some("1"));
+    }
 }

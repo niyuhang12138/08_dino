@@ -1,8 +1,8 @@
 use axum::http::Method;
+use indexmap::IndexMap;
 use serde::Deserialize;
-use std::collections::HashMap;
 
-pub type ProjectRoutes = HashMap<String, Vec<ProjectRoute>>;
+pub type ProjectRoutes = IndexMap<String, Vec<ProjectRoute>>;
 
 #[allow(unused)]
 #[derive(Deserialize, Debug)]
