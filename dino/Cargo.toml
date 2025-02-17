@@ -22,3 +22,4 @@ bundler = { workspace = true }
 tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros"] }
 rquickjs = { version = "0.9.0", features = ["full"] }
 rquickjs-macro = "0.9.0"
+typed-builder = "0.20.0"
