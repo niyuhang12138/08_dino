@@ -2,17 +2,23 @@ use crate::{config::ProjectRoutes, AppError};
 use arc_swap::ArcSwap;
 use axum::http::Method;
 use matchit::{Match, Router};
-use std::sync::Arc;
+use std::{ops::Deref, sync::Arc};
 
 #[allow(unused)]
 #[derive(Clone, Debug)]
 pub struct SwappableAppRouter {
-    pub routes: Arc<ArcSwap<Router<MethodRoute>>>,
+    pub inner: Arc<ArcSwap<AppRouterInner>>,
+}
+
+#[derive(Clone, Debug)]
+pub struct AppRouterInner {
+    pub code: String,
+    pub routes: Router<MethodRoute>,
 }
 
 #[allow(unused)]
-#[derive(Clone, Default)]
-pub struct AppRouter(Arc<Router<MethodRoute>>);
+#[derive(Clone)]
+pub struct AppRouter(Arc<AppRouterInner>);
 
 #[allow(unused)]
 #[derive(Clone, Default, Debug)]
@@ -30,22 +36,23 @@ pub struct MethodRoute {
 
 #[allow(unused)]
 impl SwappableAppRouter {
-    pub fn try_new(routes: ProjectRoutes) -> anyhow::Result<Self> {
+    pub fn try_new(code: impl Into<String>, routes: ProjectRoutes) -> anyhow::Result<Self> {
         let router = Self::get_router(routes)?;
         Ok(Self {
-            routes: Arc::new(ArcSwap::new(Arc::new(router))),
+            inner: Arc::new(ArcSwap::new(Arc::new(AppRouterInner::new(code, router)))),
         })
     }
 
-    pub fn swap(&self, routes: ProjectRoutes) -> anyhow::Result<()> {
+    pub fn swap(&self, code: impl Into<String>, routes: ProjectRoutes) -> anyhow::Result<()> {
         let router = Self::get_router(routes)?;
-        self.routes.store(Arc::new(router));
+        self.inner
+            .store(Arc::new(AppRouterInner::new(code, router)));
 
         Ok(())
     }
 
     pub fn load(&self) -> AppRouter {
-        AppRouter(self.routes.load_full())
+        AppRouter(self.inner.load_full())
     }
 
     fn get_router(routes: ProjectRoutes) -> anyhow::Result<Router<MethodRoute>> {
@@ -72,6 +79,23 @@ impl SwappableAppRouter {
     }
 }
 
+impl AppRouterInner {
+    pub fn new(code: impl Into<String>, routes: Router<MethodRoute>) -> Self {
+        Self {
+            code: code.into(),
+            routes,
+        }
+    }
+}
+
+impl Deref for AppRouter {
+    type Target = AppRouterInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
 #[allow(unused)]
 impl AppRouter {
     #[allow(elided_named_lifetimes)]
@@ -80,7 +104,7 @@ impl AppRouter {
         method: Method,
         path: &'a str,
     ) -> Result<Match<&'a str>, AppError> {
-        let Ok(ret) = self.0.at(path) else {
+        let Ok(ret) = self.routes.at(path) else {
             return Err(AppError::RoutePathNotFound(path.to_string()));
         };
         let s = match method {
@@ -114,7 +138,7 @@ mod tests {
         let config = include_str!("../fixtures/config.yml");
         let routes: ProjectConfig = serde_yml::from_str(config).unwrap();
         let routes = routes.routes;
-        let router = SwappableAppRouter::try_new(routes).unwrap();
+        let router = SwappableAppRouter::try_new("", routes).unwrap();
         let app_router = router.load();
         let m = app_router.match_it(Method::GET, "/api/hello/1").unwrap();
 
@@ -132,7 +156,7 @@ mod tests {
         let config = include_str!("../fixtures/config.yml");
         let routes: ProjectConfig = serde_yml::from_str(config).unwrap();
         let routes = routes.routes;
-        let router = SwappableAppRouter::try_new(routes).unwrap();
+        let router = SwappableAppRouter::try_new("", routes).unwrap();
         let app_router = router.load();
 
         let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
@@ -143,7 +167,7 @@ mod tests {
         let new_config = include_str!("../fixtures/config1.yml");
         let new_routes: ProjectConfig = serde_yml::from_str(new_config).unwrap();
         let new_routes = new_routes.routes;
-        router.swap(new_routes).unwrap();
+        router.swap("", new_routes).unwrap();
         let app_router = router.load();
 
         let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();

@@ -13,9 +13,22 @@ async fn main() -> Result<()> {
     let config: ProjectConfig = serde_yml::from_str(config)?;
 
     let router = DashMap::new();
+
+    let code = r#"
+        async function hello(req) {
+            return {
+                status: 200,
+                headers: {
+                    "content-type": "application/json",
+                },
+                body: JSON.stringify({ message: "hello" }),
+            };
+        }
+        "#;
+
     router.insert(
         "localhost".to_string(),
-        SwappableAppRouter::try_new(config.routes)?,
+        SwappableAppRouter::try_new(code, config.routes)?,
     );
 
     start_server(9090, router).await?;

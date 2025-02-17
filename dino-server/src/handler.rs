@@ -1,13 +1,11 @@
-use crate::{error::AppError, AppState};
+use crate::{error::AppError, AppState, JsWorker, Req};
 use axum::{
     body::Bytes,
     extract::{Query, State},
-    http::request::Parts,
+    http::{request::Parts, Response},
     response::IntoResponse,
-    Json,
 };
 use axum_extra::extract::Host;
-use serde_json::json;
 use std::collections::HashMap;
 
 /// we only support requests and return JSON responses
@@ -16,7 +14,7 @@ pub(crate) async fn handler(
     State(state): State<AppState>,
     parts: Parts,
     Host(mut host): Host,
-    Query(query): Query<serde_json::Value>,
+    Query(query): Query<HashMap<String, String>>,
     body: Bytes,
 ) -> Result<impl IntoResponse, AppError> {
     // get router from state
@@ -37,7 +35,7 @@ pub(crate) async fn handler(
         .ok_or(AppError::HostNotFound(host))?
         .load();
 
-    let matched = router.match_it(parts.method, parts.uri.path())?;
+    let matched = router.match_it(parts.method.clone(), parts.uri.path())?;
 
     let handler = matched.value;
 
@@ -47,18 +45,27 @@ pub(crate) async fn handler(
         .map(|(k, v)| (k.to_string(), v.to_string()))
         .collect::<HashMap<_, _>>();
 
-    let body = if body.is_empty() {
-        serde_json::Value::Null
-    } else {
-        serde_json::from_slice(&body)?
-    };
+    let headers = parts
+        .headers
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.to_str().unwrap().to_string()))
+        .collect::<HashMap<_, _>>();
 
-    Ok(Json(json!(
-       {
-        "handler": handler,
-        "params": params,
-        "query": query,
-        "body": body
-       }
-    )))
+    let body = String::from_utf8(body.to_vec()).ok();
+
+    let req = Req::builder()
+        .method(parts.method.to_string())
+        .url(parts.uri.to_string())
+        .headers(headers)
+        .query(query)
+        .params(params)
+        .body(body)
+        .build();
+
+    // call handler with req
+    let work = JsWorker::try_new(&router.code)?;
+    let res = work.run(handler, req)?;
+
+    // covert Req into response and return
+    Ok(Response::from(res))
 }
