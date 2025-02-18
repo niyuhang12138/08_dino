@@ -1,6 +1,8 @@
+use anyhow::Result;
 use axum::http::Method;
 use indexmap::IndexMap;
 use serde::Deserialize;
+use std::path::Path;
 
 pub type ProjectRoutes = IndexMap<String, Vec<ProjectRoute>>;
 
@@ -35,5 +37,13 @@ where
         "CONNECT" => Ok(Method::CONNECT),
         "TRACE" => Ok(Method::TRACE),
         _ => Err(serde::de::Error::custom("invalid method")),
+    }
+}
+
+impl ProjectConfig {
+    pub fn load(filename: impl AsRef<Path>) -> Result<Self> {
+        let content = std::fs::read_to_string(filename)?;
+        let config = serde_yml::from_str(&content)?;
+        Ok(config)
     }
 }

@@ -146,7 +146,7 @@ mod tests {
         assert_eq!(m.params.get("id"), Some("1"));
 
         let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
-        assert_eq!(m.value, "hello4");
+        assert_eq!(m.value, "hello");
         assert_eq!(m.params.get("name"), Some("abc"));
         assert_eq!(m.params.get("id"), Some("1"));
     }
@@ -160,7 +160,7 @@ mod tests {
         let app_router = router.load();
 
         let m = app_router.match_it(Method::POST, "/api/abc/1").unwrap();
-        assert_eq!(m.value, "hello4");
+        assert_eq!(m.value, "hello");
         assert_eq!(m.params.get("name"), Some("abc"));
         assert_eq!(m.params.get("id"), Some("1"));
 

@@ -11,14 +11,14 @@ pub fn process_from_js(input: DeriveInput) -> TokenStream {
         let ty = &field.ty;
 
         quote! {
-          let #name: #ty = obj.get(stringify!(#name))?;
+            let #name: #ty = obj.get(stringify!(#name))?;
         }
     });
 
     let ident_s = fields.iter().map(|field| {
         let name = field.ident.as_ref().expect("Field must have a name");
         quote! {
-          #name,
+            #name,
         }
     });
 

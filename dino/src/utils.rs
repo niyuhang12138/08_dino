@@ -4,7 +4,8 @@ use bundler::run_bundle;
 use glob::{glob, GlobError};
 use std::{
     collections::BTreeSet,
-    fs,
+    fs::{self, File},
+    io,
     path::{Path, PathBuf},
 };
 
@@ -38,19 +39,29 @@ pub(crate) fn calc_hash_for_files(dir: &str, exts: &[&str], len: usize) -> Resul
 
 pub(crate) fn build_project(dir: &str) -> Result<String> {
     let hash = calc_hash_for_project(dir)?;
+
     fs::create_dir_all(BUILD_DIR)?;
+
     let filename = format!("{BUILD_DIR}/{hash}.mjs");
 
-    let dest = Path::new(&filename);
+    let config = format!("{BUILD_DIR}/{hash}.yml");
+
+    let dst: &Path = Path::new(&filename);
 
     // if the file already exists, skip the build
-    if dest.exists() {
+    if dst.exists() {
         return Ok(filename);
     }
 
     // build the project
     let content = run_bundle("main.ts", &Default::default())?;
-    fs::write(dest, content)?;
+
+    fs::write(dst, content)?;
+
+    let mut dst = File::create(&config)?;
+    let mut src = File::open("config.yml")?;
+
+    io::copy(&mut src, &mut dst)?;
 
     Ok(filename)
 }

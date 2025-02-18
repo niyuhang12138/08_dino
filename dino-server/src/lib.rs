@@ -21,15 +21,23 @@ pub struct AppState {
     routes: DashMap<String, SwappableAppRouter>,
 }
 
-pub async fn start_server(
-    port: u16,
-    router: DashMap<String, SwappableAppRouter>,
-) -> anyhow::Result<()> {
+#[derive(Debug, Clone)]
+pub struct TenentRouter {
+    host: String,
+    router: SwappableAppRouter,
+}
+
+pub async fn start_server(port: u16, routers: Vec<TenentRouter>) -> anyhow::Result<()> {
     let addr = format!("0.0.0.0:{port}");
     let listener = TcpListener::bind(&addr).await?;
     info!("Listening on: {}", addr);
 
-    let state = AppState::new(router);
+    let routers = routers
+        .into_iter()
+        .map(|t| (t.host, t.router))
+        .collect::<DashMap<_, _>>();
+
+    let state = AppState::new(routers);
 
     let app = Router::new()
         .route("/{*path}", any(handler))
@@ -43,6 +51,15 @@ pub async fn start_server(
 impl AppState {
     pub fn new(router: DashMap<String, SwappableAppRouter>) -> Self {
         Self { routes: router }
+    }
+}
+
+impl TenentRouter {
+    pub fn new(host: impl Into<String>, router: SwappableAppRouter) -> Self {
+        Self {
+            host: host.into(),
+            router,
+        }
     }
 }
 

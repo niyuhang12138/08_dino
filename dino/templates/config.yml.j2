@@ -1,7 +1,7 @@
 ---
-names: {{ name }}
+name: {{ name }}
 routes:
   # example routes
-  - /api
+  /api/hello/{id}:
     - method: GET
       handler: hello
