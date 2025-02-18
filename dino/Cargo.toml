@@ -22,3 +22,7 @@ bundler = { workspace = true }
 tokio = { version = "1.43.0", features = ["rt", "rt-multi-thread", "macros"] }
 tracing-subscriber = { workspace = true }
 dino-server = { workspace = true }
+notify = "8.0.0"
+tracing = { workspace = true }
+notify-debouncer-full = "0.5.0"
+tokio-stream = "0.1.17"

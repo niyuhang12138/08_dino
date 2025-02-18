@@ -67,8 +67,8 @@ impl JsWorker {
 
 impl From<Res> for Response {
     fn from(value: Res) -> Self {
-        // let mut builder = Response::builder().status(value.status);
-        let mut builder = Response::builder();
+        let mut builder = Response::builder().status(value.status);
+        // let mut builder = Response::builder();
         for (k, v) in value.headers {
             builder = builder.header(k, v);
         }

@@ -1,0 +1,17 @@
+[DebouncedEvent { event: Event { kind:
+Modify(Name(From)), paths: ["E:\\Users\\ASUS\\Desktop\\tyr-rust-bootcamp\\tmp\\tst\\.\\main.ts"]
+, attr:tracker: None, attr:flag: None, attr:info: None, attr:source: None }, time: Instant { t:
+27681.6556868s } }, DebouncedEvent { event: Event { kind: Create(Any), paths: ["E:\\Users\\ASUS\
+\Desktop\\tyr-rust-bootcamp\\tmp\\tst\\.\\main.ts"], attr:tracker: None, attr:flag: None, attr:i
+nfo: None, attr:source: None }, time: Instant { t: 27681.6566152s } }, DebouncedEvent { event: E
+vent { kind: Modify(Any), paths: ["E:\\Users\\ASUS\\Desktop\\tyr-rust-bootcamp\\tmp\\tst\\.\\mai
+n.ts"], attr:tracker: None, attr:flag: None, attr:info: None, attr:source: None }, time: Instant
+ { t: 27681.6566455s } }]
+
+
+[DebouncedEvent { event: Event { kind:
+Modify(Any), paths: ["E:\\Users\\ASUS\\Desktop\\tyr-rust-bootcamp\\tmp\\tst\\.\\main.ts"], attr:
+tracker: None, attr:flag: None, attr:info: None, attr:source: None }, time: Instant { t: 27681.6
+714714s } }, DebouncedEvent { event: Event { kind: Remove(Any), paths: ["E:\\Users\\ASUS\\Deskto
+p\\tyr-rust-bootcamp\\tmp\\tst\\.\\.main.ts.swp"], attr:tracker: None, attr:flag: None, attr:inf
+o: None, attr:source: None }, time: Instant { t: 27681.6985758s } }]

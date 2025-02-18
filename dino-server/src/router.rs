@@ -34,7 +34,6 @@ pub struct MethodRoute {
     pub trace: Option<String>,
 }
 
-#[allow(unused)]
 impl SwappableAppRouter {
     pub fn try_new(code: impl Into<String>, routes: ProjectRoutes) -> anyhow::Result<Self> {
         let router = Self::get_router(routes)?;
