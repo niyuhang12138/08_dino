@@ -27,7 +27,7 @@ async fn main() -> Result<()> {
         "#;
 
     let tenent = TenentRouter::new(
-        "example.com",
+        "localhost",
         SwappableAppRouter::try_new(code, config.routes)?,
     );
 

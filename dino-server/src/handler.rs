@@ -38,6 +38,7 @@ pub(crate) async fn handler(
     let req = assemble_req(&matched, &parts, body, query)?;
 
     // call handler with req
+    // TODO: build worker pool, and send req vis mpsc channel and get res from oneshot channel
     let work = JsWorker::try_new(&router.code)?;
     let res = work.run(handler, req)?;
 

@@ -2,11 +2,13 @@ mod config;
 mod engine;
 mod error;
 mod handler;
+mod middleware;
 mod router;
 
 pub use config::*;
 pub use engine::*;
 pub use error::AppError;
+pub use middleware::*;
 pub use router::*;
 
 use axum::{routing::any, Router};
@@ -41,6 +43,7 @@ pub async fn start_server(port: u16, routers: Vec<TenentRouter>) -> anyhow::Resu
 
     let app = Router::new()
         .route("/{*path}", any(handler))
+        .layer(ServerTimeLayer)
         .with_state(state);
 
     axum::serve(listener, app).await?;

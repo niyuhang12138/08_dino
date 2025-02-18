@@ -23,3 +23,4 @@ dino-macros = { workspace = true }
 rquickjs = { workspace = true }
 rquickjs-macro = { workspace = true }
 typed-builder = "0.20.0"
+tower = "0.5.2"
